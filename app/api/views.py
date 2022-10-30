@@ -10,6 +10,8 @@ from .serializers import (
     ContentTypeSerializer, PhotoSerializer,
     ThingSerializer, CountrySerializer, CitySerializer,
 )
+from rest_framework.permissions import IsAuthenticated
+
 
 
 # Create your views here.
@@ -18,9 +20,10 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 30
 
-class AbstractReadOnlyViewset(viewsets.ReadOnlyModelViewSet):
+class AbstractReadOnlyViewset(viewsets.ModelViewSet):
     serializer_class = None
     queryset = None
+    permission_classes = (IsAuthenticated,)
     filter_backends = (SearchFilter, OrderingFilter)
     ordering_fields = (
         "pk", "user", "image", "types"
