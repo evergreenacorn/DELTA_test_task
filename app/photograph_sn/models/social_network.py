@@ -1,9 +1,8 @@
-# from django.utils.translation import ugettext as _
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType as CT
-from ._base import models, CommonEntity
-
+from django.db import models
 
 # Create your models here.
 class ContentType(models.Model):
@@ -11,8 +10,13 @@ class ContentType(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
+    class Meta:
+        verbose_name = _('Тип контента')
+        verbose_name_plural = _('Типы контента')
+        indexes = [models.Index(fields=['content_type', 'object_id'])]
+
     def __str__(self):
-        return f"{self.pk}: obj=<<{self.content_object}>>"
+        return f"{self.pk}: <<{self.content_object.__class__.__name__}: {self.content_object.name}>>"
 
 class Photo(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -20,20 +24,13 @@ class Photo(models.Model):
     image = models.ImageField(upload_to="photos/%Y/%m/%d")
     is_approved = models.BooleanField(default=False)
 
+    class Meta:
+        verbose_name = _('Фото')
+        verbose_name_plural = _('Фото')
+
     def __str__(self):
         return f"{self.pk}: {self.image.name}"
 
-class Country(CommonEntity, models.Model):
-    type = GenericRelation(ContentType)
-
-    class Meta:
-        verbose_name_plural = 'Countries'
-
-class City(CommonEntity, models.Model):
-    type = GenericRelation(ContentType)
-
-    class Meta:
-        verbose_name_plural = 'Cities'
-
-class Thing(CommonEntity, models.Model):
-    type = GenericRelation(ContentType)
+    # @classmethod
+    # def things_photos(cls):
+    #     return cls.objects.prefetch_related()
