@@ -11,6 +11,8 @@ from .serializers import (
     ThingSerializer, CountrySerializer, CitySerializer,
 )
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 
 
 # Create your views here.
@@ -41,9 +43,32 @@ class PhotoModelViewset(AbstractViewset):
         "pk", "user", "image", "types"
     )
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
+    def list(self, request, *args, **kwargs):
+        get_params = request.GET
+        if len(get_params) > 0:
+            if 'approved' in get_params:
+                if get_params['approved'].lower() == 'true':
+                    queryset = self.filter_queryset(Photo.get_approved_photos())
+                elif get_params['approved'].lower() == 'false':
+                    queryset = self.filter_queryset(Photo.get_unapproved_photos())
+            else:
+                queryset_params = {}
+                for param in ('country', 'city', 'thing'):
+                    if param in get_params.keys():
+                        if get_params[param].lower() == 'true':
+                            queryset_params[param] = True
+                        elif get_params[param].lower() == 'false':
+                            queryset_params[param] = False
+                queryset = Photo.get_approved_photos_by_types(**queryset_params)
+        else:
+            queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
 class ContentTypeViewset(AbstractReadOnlyViewset):
@@ -61,3 +86,5 @@ class CityViewset(AbstractViewset):
 class ThingViewset(AbstractViewset):
     serializer_class = ThingSerializer
     queryset = Thing.objects.all()
+
+
