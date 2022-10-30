@@ -39,8 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     'rest_framework',
+    "debug_toolbar",
     
+    'accounts.apps.AccountsConfig',
     'photograph_sn.apps.PhotographSnConfig',
+    'api.apps.ApiConfig'
 ]
 
 MIDDLEWARE = [
@@ -51,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'test_task.urls'
@@ -58,7 +62,11 @@ ROOT_URLCONF = 'test_task.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'templates/boards/',
+            BASE_DIR / 'templates/accounts/',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,9 +127,56 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    # http://127.0.0.1:8000/static/css/bootstrap.min.css  # example to test
+    BASE_DIR / 'static'
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+INTERNAL_IPS = (
+    '127.0.0.1',
+    '192.168.1.23',
+    'localhost'
+)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {  # здесь описывается отображение
+        'colored': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': '%(log_color)s[%(asctime)s->%(name)s]%(blue)s %(levelname)s %(module)s %(yellow)s%(message)s',
+        },
+    },
+    'handlers': {  # здесь описывается способ вывода
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'colored',
+        },
+    },
+    'loggers': {  # здесь описывается что выводить(сообщения бд, запросы и т.д.)
+        'django.server': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['console'],
+        # },
+        'django.request': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': True,
+        },
+        'django.template': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        },
+    },
+}
