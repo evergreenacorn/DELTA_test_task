@@ -59,7 +59,7 @@ class PhotoModelViewset(AbstractViewset):
                             queryset_params[param] = True
                         elif get_params[param].lower() == 'false':
                             queryset_params[param] = False
-                queryset = Photo.get_approved_photos_by_types(**queryset_params)
+                queryset = self.filter_queryset(Photo.get_approved_photos_by_types(**queryset_params))
         else:
             queryset = self.filter_queryset(self.get_queryset())
 
