@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType as CT
 from django.db import models
 from django.db.models import Q
 
+
 # Create your models here.
 class ContentType(models.Model):
     content_type = models.ForeignKey(CT, on_delete=models.CASCADE)
